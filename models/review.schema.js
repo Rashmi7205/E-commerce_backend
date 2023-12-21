@@ -9,3 +9,5 @@ const reviewSchema  = new Schema({
 
 const Review = model("Review",reviewSchema);
 
+export default Review;
+

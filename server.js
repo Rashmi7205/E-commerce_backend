@@ -1,7 +1,10 @@
 import express from 'express';
-import testRouter from './routes/test.route.js';
 import cookieParser from 'cookie-parser';
-import cors from 'cors'
+import cors from 'cors';
+
+import testRouter from './routes/test.route.js';
+import authRouter from './routes/auth.routes.js';
+import errorMiddleware from './middlewares/error.middleware.js';
 
 const app = express();
 
@@ -11,18 +14,22 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use(cors({
-    origin:"*",
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  }));
-  
+  origin: "*",
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
-app.use('/api/home',testRouter);
+
+app.use('/api/home', testRouter);
+// Authentication Routes
+app.use('/api/auth', authRouter);
 
 
 app.all('*', (req, res) => {
-    return res.status(404).send('OOPS!! PAGE NOT FOUND');
-  });
+  return res.status(404).send('OOPS!! PAGE NOT FOUND');
+});
+
+app.use(errorMiddleware);
 
 export default app;
