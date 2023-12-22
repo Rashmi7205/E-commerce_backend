@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 
 const connectToDb = async ()=>{
     mongoose.set('strictQuery',true);
-    await mongoose.connect("mongodb://127.0.0.1:27017/e_com");
-    console.log("db cconnected");
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log("db cconnected",conn.connection.host);
 };
 
 export default connectToDb;

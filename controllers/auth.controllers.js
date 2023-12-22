@@ -9,12 +9,17 @@ const cookieOption = {
     httpOnly: true,// Cannot be accsessed by the client side javascript 
 }
 // register (POST)
-const registerUser = async (req, res, next) => {
+const registerUser = async (req,res,next) => {
 
     try {
         // Getting the info from the req body
         const { username, email, password } = req.body;
         //check if it already registered or not
+
+        if(!username || !email || !password){
+            return next(new AppError(401,"All fields are mandatory"));
+        }
+
         const isRegistered = await User.findOne({ email });
 
         if (isRegistered) {
@@ -48,8 +53,7 @@ const registerUser = async (req, res, next) => {
         });
 
     } catch (error) {
-        console.log(error.message);
-        return next(new AppError(400, "The request could not be understood or was missing required parameters"));
+        return next(new AppError(400, error.message));
     }
 
 };
