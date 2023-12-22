@@ -21,7 +21,8 @@ const userSchema = new Schema({
         },  
     password:{type:String,required:true,unique:true},
     profilePic:{
-        type:String,
+        public_id:String,
+        secure_url:String,
     },
     email:{
         type:String,required:true,unique:true
@@ -29,7 +30,6 @@ const userSchema = new Schema({
     address:[addressSchema],
     role:{type:String,default:"User"},
     phone:{type:String},
-    forgotPasswordToken:{type:String},
     resetPasswordToken:{type:String},
     
 },{timestamps:true});
