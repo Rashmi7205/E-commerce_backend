@@ -7,7 +7,8 @@ const sendEmail = async (emailId,subject,message)=>{
             auth:{
                 user:process.env.SMTP_USERNAME,
                 pass:process.env.SMTP_PASSWORD,
-            }
+            },
+            authMethod:"plain"
         });
 
         await transporter.sendMail({

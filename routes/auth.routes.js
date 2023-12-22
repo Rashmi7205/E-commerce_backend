@@ -9,7 +9,8 @@ const router = Router();
 router.post('/register',registerUser);
 router.post('/login',login);
 router.post('/logout',isLoggedIn,logout);
-router.post('/reset-password ',resetPassword);
+router.post('/forgot-password',forgotPassword);
+router.post('/reset-password/:resetPasswordToken',resetPassword);
 router.post('/update-user',isLoggedIn,upload.single('profilePic'),updateUser);
 
 export default router;

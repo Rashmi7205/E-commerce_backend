@@ -164,10 +164,11 @@ const forgotPassword = async (req, res, next) => {
         }
 
         //generate a reset token 
-        const resetPasswordToken = user.generatePasswordResetToken();
+        const resetPasswordToken = await user.generatePasswordResetToken();
+
 
         //set the token to the user schema 
-        const updateUser = await findByIdAndUpdate(user._id, { resetPasswordToken });
+        const updateUser = await User.findByIdAndUpdate(user._id, { resetPasswordToken });
 
         //send an email with reset token
         const subject = 'RESET YOUR PASSWORD '
