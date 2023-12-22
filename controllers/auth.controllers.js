@@ -2,6 +2,7 @@ import { User } from '../models/index.js';
 import AppError from '../utils/apperror.js';
 import cloudinary from 'cloudinary';
 import sendEmail from '../utils/sendEmail.js';
+import fs from 'fs';
 
 
 const cookieOption = {
@@ -250,6 +251,14 @@ const updateUser = async (req, res, next) => {
                     secure_url: uploadFile.secure_url
                 },
             });
+
+            //delete the file from the server
+            if (fs.existsSync(req.file.path)) {
+                // File exists, delete it
+                fs.unlinkSync(req.file.path);
+              }
+
+
         }
 
 
