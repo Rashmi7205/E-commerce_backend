@@ -4,6 +4,8 @@ import cors from 'cors';
 
 import testRouter from './routes/test.route.js';
 import authRouter from './routes/auth.routes.js';
+import productRouter from './routes/product.routes.js';
+
 import errorMiddleware from './middlewares/error.middleware.js';
 
 const app = express();
@@ -24,6 +26,7 @@ app.use(cors({
 app.use('/api/home', testRouter);
 // Authentication Routes
 app.use('/api/auth', authRouter);
+app.use('/api/product',productRouter);
 
 
 app.all('*', (req, res) => {

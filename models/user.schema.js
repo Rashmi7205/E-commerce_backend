@@ -10,7 +10,7 @@ const addressSchema = new Schema({
     state: { type: String, required: true },
     postalCode: { type: String, required: true },
     country: { type: String, required: true },
-    isDefault: { type: Boolean, default: false },
+    isDefault: { type: Boolean, default: true },
 });
 
 const userSchema = new Schema({

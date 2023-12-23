@@ -217,6 +217,7 @@ const forgotPassword = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
     try {
         const { id, email } = req.user;
+      
         if (!req.user) {
             return next(new AppError(401, "Unauthorized user login for more details"));
         }
@@ -229,7 +230,9 @@ const updateUser = async (req, res, next) => {
 
         // get the info from the req.body
         const { username, phone } = req.body;
-
+        if(!username || !phone){
+            return next(new AppError(401, "All fields are mandatory"));
+        }
 
         const user = await User.findByIdAndUpdate(id, {
             username,
@@ -273,6 +276,59 @@ const updateUser = async (req, res, next) => {
     }
 }
 
+/// update user address
+const updateUserAddress = async (req,res,next)=>{
+    try {
+        //get user info 
+        if(!req.user){
+            return next(new AppError(402,"Unauthenticated User ,Login for this service"));
+        }
+
+        //find the user exist or not
+        const user = await User.findById(req.user.id);
+       
+        if(!user){
+            return next(new AppError(402,"User doesnot exist"));
+        }
+
+        // get the user address
+        const {street,city,state,postalCode,country,isDefault} = req.body;
+
+        if(!street || !city ||
+            !state ||!postalCode 
+            || !country ){
+                return next(new AppError(401,"All fields are mandatory"));
+            }
+
+            console.log(user);
+
+            
+        const newAddress = {
+            user:req.user.id,
+            street,
+            city,
+            state,
+            postalCode,
+            country,
+            isDefault
+        }
+
+        //update the address 
+        user.address.push(newAddress);
+
+        await user.save();
+       
+        console.log(user);
+        //send response
+        return res.status(200).json({
+            success:true,
+            message:"User Address updated successfully",
+            newAddress
+        });
+    } catch (error) {
+         return next(new AppError(401,error.message));
+    }
+}
 
 export {
     registerUser,
@@ -280,5 +336,6 @@ export {
     logout,
     resetPassword,
     forgotPassword,
-    updateUser
+    updateUser,
+    updateUserAddress
 }
