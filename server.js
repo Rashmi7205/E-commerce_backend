@@ -26,7 +26,7 @@ app.use(cors({
 app.use('/api/home', testRouter);
 // Authentication Routes
 app.use('/api/auth', authRouter);
-app.use('/api/product',productRouter);
+app.use('/api/products',productRouter);
 
 
 app.all('*', (req, res) => {

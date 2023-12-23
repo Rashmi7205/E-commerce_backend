@@ -7,19 +7,29 @@ import {  getProduct,
     updateProductById,
     removeProductById,
     getProductCatagories,
-    addProduct} from '../controllers/product.controllers.js';
+    addProduct,
+    getMyProduct} from '../controllers/product.controllers.js';
 
 const router = Router();
 
+// public routes
 router.
-    route('/products/:catagory/:limit/:skip')
+    route('/:catagory/:limit/:skip') 
     .get(getProduct);
+router.get('/catagories',getProductCatagories);
 
+//protected routes
+//add product
 router.post('/add',isLoggedIn,upload.array('image_urls',5),addProduct);
 
-router.route('/products/:id')
-    .get(getProductById)
-    .put(isLoggedIn,updateProductById)
-    .delete(isLoggedIn,removeProductById)
+//get user products 
+router.route('/my-products')
+        .get(isLoggedIn,getMyProduct);
+
+router.route('/:id')
+    .get(getProductById) // get a specific product by id
+    .put(isLoggedIn,updateProductById) // update a product by id
+    .delete(isLoggedIn,removeProductById) // delete a product by id
+
 
 export default router;
