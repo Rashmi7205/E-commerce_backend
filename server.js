@@ -5,6 +5,7 @@ import cors from 'cors';
 import testRouter from './routes/test.route.js';
 import authRouter from './routes/auth.routes.js';
 import productRouter from './routes/product.routes.js';
+import cartRoutes from './routes/cart.routes.js';
 
 import errorMiddleware from './middlewares/error.middleware.js';
 
@@ -26,9 +27,12 @@ app.use(cors({
 app.use('/api/home', testRouter);
 // Authentication Routes
 app.use('/api/auth', authRouter);
+//product routes
 app.use('/api/products',productRouter);
+//cart routes
+app.use('/api/cart',cartRoutes);
 
-
+// for all the route except the the above routes
 app.all('*', (req, res) => {
   return res.status(404).send('OOPS!! PAGE NOT FOUND');
 });
