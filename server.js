@@ -6,8 +6,10 @@ import testRouter from './routes/test.route.js';
 import authRouter from './routes/auth.routes.js';
 import productRouter from './routes/product.routes.js';
 import cartRoutes from './routes/cart.routes.js';
+import orderRoutes from './routes/order.routes.js';
 
 import errorMiddleware from './middlewares/error.middleware.js';
+
 
 const app = express();
 
@@ -31,6 +33,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/products',productRouter);
 //cart routes
 app.use('/api/cart',cartRoutes);
+//order routes
+app.use('/api/orders',orderRoutes);
 
 // for all the route except the the above routes
 app.all('*', (req, res) => {
