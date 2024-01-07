@@ -7,6 +7,7 @@ import authRouter from './routes/auth.routes.js';
 import productRouter from './routes/product.routes.js';
 import cartRoutes from './routes/cart.routes.js';
 import orderRoutes from './routes/order.routes.js';
+import reviewRoutes from './routes/review.routes.js';
 
 import errorMiddleware from './middlewares/error.middleware.js';
 
@@ -35,6 +36,8 @@ app.use('/api/products',productRouter);
 app.use('/api/cart',cartRoutes);
 //order routes
 app.use('/api/orders',orderRoutes);
+//review Routes
+app.use('/api/review',reviewRoutes);
 
 // for all the route except the the above routes
 app.all('*', (req, res) => {

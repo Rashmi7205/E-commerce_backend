@@ -2,6 +2,7 @@ import AppError from '../utils/apperror.js';
 import { Product, User } from '../models/index.js';
 import cloudinary from 'cloudinary';
 import fs from 'fs';
+import mongoose from 'mongoose';
 
 //get products
 const getProduct = async (req, res, next) => {
@@ -32,7 +33,7 @@ const getProduct = async (req, res, next) => {
         });
 
     } catch (error) {
-        return next(new AppError(402, error.message));
+        return next(new AppError(402, "Internal Server Error"));
     }
 }
 /// add products 
@@ -115,36 +116,76 @@ const addProduct = async (req, res, next) => {
 
 
     } catch (error) {
-        return next(new AppError(402, error.message));
+        return next(new AppError(402, "Internal Server Error"));
     }
 }
 
 // get product by id
 const getProductById = async (req, res, next) => {
     try {
-        // get the product id
-        const { id } = req.params;
-
-        if (!id) {
-            return next(new AppError(402, "Product id is required"))
-        }
-        //check the product exist or not
-        const product = await Product.findById(id);
-
-        if (!product) {
-            return next(new AppError(402, "This product doesnot exist"));
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Product fetched successfully",
-            product
-        });
+      // get the product id
+      const { id } = req.params;
+  
+      if (!id) {
+        return next(new AppError(404, "Product id is required"));
+      }
+  
+      // check if the product exists or not
+      const product = await Product.aggregate([
+        {
+          '$match': {
+            '_id':new mongoose.Types.ObjectId("65868ff3d408cd37d2e59f09")
+          }
+        },
+        {
+          '$lookup': {
+            'from': 'users',
+            'localField': 'owner',
+            'foreignField': '_id',
+            'as': 'owner'
+          }
+        },
+        {
+          '$unwind': '$owner'
+        },
+        {
+          '$project': {
+            'name': 1,
+            'description': 1,
+            'price': 1,
+            'quantity': 1,
+            'image_urls': 1,
+            'category': 1, // Corrected field name
+            'owner.username': 1,
+            'owner._id': 1,
+            'owner.profilePic.secure_url': 1,
+            'review':1
+          }
+        },
+        {
+            '$lookup': {
+              'from': 'reviews',
+              'localField': '_id',
+              'foreignField': 'product',
+              'as': 'reviews'
+            }
+          },
+      ]);
+  
+      if (product.length === 0) {
+        return next(new AppError(404, "This product does not exist"));
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: "Product fetched successfully",
+        product:product[0],
+      });
     } catch (error) {
-        return next(new AppError(401, error.message));
+      return next(new AppError(500, error.message));
     }
-}
-
+  };
+  
 //update product by id
 const updateProductById = async (req, res, next) => {
     try {
@@ -220,7 +261,7 @@ const updateProductById = async (req, res, next) => {
             updatedProduct
         });
     } catch (error) {
-        return next(new AppError(401, error.message));
+        return next(new AppError(401, "Internal Server Error"));
     }
 }
 
@@ -254,7 +295,7 @@ const removeProductById = async (req, res, next) => {
         });
 
     } catch (error) {
-        return next(new AppError(401, error.message));
+        return next(new AppError(401, "Internal Server Error"));
     }
 }
 
@@ -273,7 +314,7 @@ const getProductCatagories = async (req, res, next) => {
         });
 
     } catch (error) {
-        return next(new AppError(401, error.message));
+        return next(new AppError(401, "Internal Server Error"));
     }
 }
 
@@ -323,7 +364,22 @@ const getMyProduct = async (req, res, next) => {
         });
 
     } catch (error) {
-        return next(new AppError(401, error.message));
+        return next(new AppError(401, "Internal Server Error"));
+    }
+}
+const searchProduct = async (req,res,next)=>{
+    try {
+            const searchTerm  = req.query.term;
+            
+            const result = await Product.find({$text:{$search:searchTerm}});
+            
+            return res.status(200).json({
+                success:true,
+                message:"Searched product fetched successfully",
+                result,
+            });
+    } catch (error) {
+        return next(new AppError(401, "Internal Server Error"));
     }
 }
 
@@ -335,7 +391,8 @@ export {
     updateProductById,
     removeProductById,
     getProductCatagories,
-    addProduct
+    addProduct,
+    searchProduct
 }
 
 

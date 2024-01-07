@@ -64,27 +64,27 @@ const login = async (req, res, next) => {
     try {
         // getting the infor from the req.body
         const { email, password } = req.body;
-
+       
         // Check if the email is registered or not
         const user = await User.findOne({ email });
-
+       
         if (!user) {
             return next(new AppError(204, "No user exist register user"));
         }
-
-        // checking the passwor is correct or not
+        
+        // checking the password is correct or not
         const isValidUser = await user.comparePassword(password);
+
         if (!isValidUser) {
             return next(new AppError(401, "Unauthorized, incorrect password"));
         }
-
+       
         //generating cookies
         const token = await user.generateJWTtoken();
 
 
         //setting the cookies
         res.cookie("E_com_token", token, cookieOption);
-
 
         return res.status(200).json({
             success: true,

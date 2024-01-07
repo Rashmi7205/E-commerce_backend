@@ -8,7 +8,8 @@ import {  getProduct,
     removeProductById,
     getProductCatagories,
     addProduct,
-    getMyProduct} from '../controllers/product.controllers.js';
+    getMyProduct,
+    searchProduct} from '../controllers/product.controllers.js';
 
 const router = Router();
 
@@ -17,6 +18,7 @@ router.
     route('/:catagory/:limit/:skip') 
     .get(getProduct);
 router.get('/catagories',getProductCatagories);
+router.get('/search',searchProduct);
 
 //protected routes
 //add product
