@@ -10,55 +10,54 @@ const cookieOption = {
     httpOnly: true,// Cannot be accsessed by the client side javascript 
 }
 // register (POST)
-const registerUser = async (req,res,next) => {
-
+const registerUser = async (req, res, next) => {
     try {
-        // Getting the info from the req body
-        const { username, email, password } = req.body;
-        //check if it already registered or not
-
-        if(!username || !email || !password){
-            return next(new AppError(401,"All fields are mandatory"));
-        }
-
-        const isRegistered = await User.findOne({ email });
-
-        if (isRegistered) {
-            return next(new AppError(400, "The user already exists"));
-        }
-
-        //register user
-        const user = await User.create({
-            username,
-            email,
-            password,
-        });
-
-        await user.save();
-
-        // Making user password empty
-        user.password = undefined;
-
-        //generate token for cookie 
-        const token = await user.generateJWTtoken();
-
-        // Set the cookies
-        res.cookie('E_com_token', token, cookieOption);
-
-        //send response to the user
-
-        return res.status(200).json({
-            succsess: true,
-            message: "User Registered Succsessfully",
-            user
-        });
-
+      // Getting the info from the req body
+      const { username, email, password } = req.body;
+  
+      // Check if all fields are provided
+      if (!username || !email || !password) {
+        return next(new AppError(400, "All fields are mandatory"));
+      }
+  
+      // Check if the user is already registered
+      const isRegistered = await User.findOne({ email });
+  
+      if (isRegistered) {
+        return next(new AppError(400, "The user already exists"));
+      }
+  
+      // Register the user
+      const user = await User.create({
+        username,
+        email,
+        password,
+      });
+  
+      // Do not save the user again, as it is already saved by User.create()
+  
+      // Making user password undefined
+      user.password = undefined;
+  
+      // Generate token for cookie
+      const token = await user.generateJWTtoken();
+  
+      // Set the cookie
+      res.cookie('E_com_token', token, cookieOption);
+  
+      // Send response to the user
+      return res.status(201).json({
+        success: true,
+        message: "User Registered Successfully",
+        user,
+      });
+  
     } catch (error) {
-        return next(new AppError(400, error.message));
+      console.error(error); // Log the error for debugging
+      return next(new AppError(500, "Internal Server Error"));
     }
-
-};
-
+  };
+  
 // / login (POST)
 const login = async (req, res, next) => {
     try {
@@ -215,120 +214,111 @@ const forgotPassword = async (req, res, next) => {
 
 /// update user profile
 const updateUser = async (req, res, next) => {
-    try {
-        const { id, email } = req.user;
-      
-        if (!req.user) {
-            return next(new AppError(401, "Unauthorized user login for more details"));
-        }
+  try {
+    const { id, email } = req.user;
 
-        const userExist = await User.findById(id);
-
-        if (!userExist) {
-            return next(new AppError(401, "User doesnot exist"));
-        }
-
-        // get the info from the req.body
-        const { username, phone } = req.body;
-        if(!username || !phone){
-            return next(new AppError(401, "All fields are mandatory"));
-        }
-
-        const user = await User.findByIdAndUpdate(id, {
-            username,
-            phone
-        });
-
-        if (req.file) {
-            if (user?.profilePic) {
-                await cloudinary.v2.uploader.destroy(user?.profilePic?.public_id);
-            }
-
-            const uploadFile = await cloudinary.v2.uploader.upload(req.file.path, {
-                folder: 'e_com'
-            });
-
-            await User.findByIdAndUpdate(id, {
-                profilePic: {
-                    public_id: uploadFile.public_id,
-                    secure_url: uploadFile.secure_url
-                },
-            });
-
-            //delete the file from the server
-            if (fs.existsSync(req.file.path)) {
-                // File exists, delete it
-                fs.unlinkSync(req.file.path);
-              }
-
-
-        }
-
-
-        return res.status(200).json({
-            success: true,
-            message: "Account updated Successfully",
-            user
-        });
-
-    } catch (error) {
-        return next(new AppError(400, error.message));
+    if (!req.user) {
+      return next(new AppError(401, "Unauthorized user login for more details"));
     }
-}
 
-/// update user address
-const updateUserAddress = async (req,res,next)=>{
-    try {
-        //get user info 
-        if(!req.user){
-            return next(new AppError(402,"Unauthenticated User ,Login for this service"));
-        }
+    const userExist = await User.findById(id);
 
-        //find the user exist or not
-        const user = await User.findById(req.user.id);
-       
-        if(!user){
-            return next(new AppError(402,"User doesnot exist"));
-        }
-
-        // get the user address
-        const {street,city,state,postalCode,country,isDefault} = req.body;
-
-        if(!street || !city ||
-            !state ||!postalCode 
-            || !country ){
-                return next(new AppError(401,"All fields are mandatory"));
-            }
-
-            console.log(user);
-
-            
-        const newAddress = {
-            user:req.user.id,
-            street,
-            city,
-            state,
-            postalCode,
-            country,
-            isDefault
-        }
-
-        //update the address 
-        user.address.push(newAddress);
-
-        await user.save();
-       
-        console.log(user);
-        //send response
-        return res.status(200).json({
-            success:true,
-            message:"User Address updated successfully",
-            newAddress
-        });
-    } catch (error) {
-         return next(new AppError(401,error.message));
+    if (!userExist) {
+      return next(new AppError(401, "User does not exist"));
     }
+
+    // get the info from the req.body
+    const { username, phone } = req.body;
+    if (!username || !phone) {
+      return next(new AppError(401, "All fields are mandatory"));
+    }
+
+    const user = await User.findByIdAndUpdate(id, {
+      username,
+      phone
+    });
+
+    if (req.file) {
+      if (user?.profilePic) {
+        await cloudinary.v2.uploader.destroy(user?.profilePic?.public_id);
+      }
+
+      const uploadFile = await cloudinary.v2.uploader.upload(req.file.path, {
+        folder: 'e_com'
+      });
+
+      await User.findByIdAndUpdate(id, {
+        profilePic: {
+          public_id: uploadFile.public_id,
+          secure_url: uploadFile.secure_url
+        },
+      });
+
+      // delete the file from the server
+      if (fs.existsSync(req.file.path)) {
+        // File exists, delete it
+        fs.unlinkSync(req.file.path);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Account updated Successfully",
+      user
+    });
+  } catch (error) {
+    return next(new AppError(400, error.message));
+  }
 }
+//upadte usre address
+const updateUserAddress = async (req, res, next) => {
+    try {
+      // get user info
+      if (!req.user) {
+        return next(new AppError(402, "Unauthenticated User, Login for this service"));
+      }
+  
+      // find the user exist or not
+      const user = await User.findById(req.user.id);
+  
+      if (!user) {
+        return next(new AppError(402, "User does not exist"));
+      }
+  
+      // get the user address
+      const { street, city, state, postalCode, country, isDefault } = req.body;
+  
+      if (!street || !city || !state || !postalCode || !country) {
+        return next(new AppError(401, "All fields are mandatory"));
+      }
+  
+      const newAddress = {
+        user: req.user.id,
+        street,
+        city,
+        state,
+        postalCode,
+        country,
+        isDefault
+      }
+  
+      // update the address
+      user.address.push(newAddress);
+  
+      await user.save();
+  
+      console.log(user);
+      // send response
+      return res.status(200).json({
+        success: true,
+        message: "User Address updated successfully",
+        newAddress
+      });
+    } 
+    catch (error) {
+      return next(new AppError(401, error.message));
+    }
+};
 
 export {
     registerUser,
