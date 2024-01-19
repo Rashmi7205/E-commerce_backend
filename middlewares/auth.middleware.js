@@ -13,7 +13,7 @@ const isLoggedIn = async (req,res,next)=>{
         const userDetails = await jwt.verify(E_com_token,process.env.JWT_SECRET);
 
         req.user = userDetails;
-       
+     
    } catch (error) {
         return next(new AppError(400,error.message));
    }

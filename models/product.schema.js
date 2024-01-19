@@ -6,7 +6,7 @@ const productSchema = new Schema({
     description:{type:String},
     price:{type:Number,required:true},
     owner:{type:mongoose.Schema.Types.ObjectId ,ref:'User',required:true},
-    catagory:{type:String,required:true},
+    category:{type:String,required:true},
     quantity:{type:Number,required:true},
     image_urls:[
         {
@@ -15,6 +15,6 @@ const productSchema = new Schema({
         }
     ],
 },{timestamps:true});
-productSchema.index({name:'text',description:'text',catagory:'text'});
+productSchema.index({name:'text',description:'text',category:'text'});
 
 export default model("Product",productSchema);

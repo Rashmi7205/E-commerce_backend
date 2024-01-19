@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 //get products
 const getProduct = async (req, res, next) => {
     try {
-        let { catagory, limit, skip } = req.params;
+        let { category, limit, skip } = req.params;
 
         if (!limit) {
             limit = 20;
@@ -19,8 +19,8 @@ const getProduct = async (req, res, next) => {
         }
 
         let productList;
-        if (catagory) {
-            productList = await Product.find({ catagory }).skip(skip).limit(limit);
+        if (category) {
+            productList = await Product.find({ category }).skip(skip).limit(limit);
         }
         else {
             productList = await Product.find({}).skip(skip).limit(limit);
@@ -43,10 +43,10 @@ const addProduct = async (req, res, next) => {
             return next(new AppError(401, "Unauthenticated user"));
         }
 
-        const { name, description, price, catagory, quantity } = req.body;
+        const { name, description, price, category, quantity } = req.body;
 
 
-        if (!name || !description || !price || !catagory || !quantity) {
+        if (!name || !description || !price || !category || !quantity) {
             return next(new AppError(401, "All fields are mandatory"));
         }
 
@@ -57,8 +57,8 @@ const addProduct = async (req, res, next) => {
         if (description && (description.length > 1000 || description.length < 0)) {
             return next(new AppError(401,"Description must be Max less than 1000 character"));
         }
-        if (catagory && (catagory.length > 100 || catagory.length < 0)) {
-            return next(new AppError(401,"Catagory must be Max less than 1000 character"));
+        if (category && (category.length > 100 || category.length < 0)) {
+            return next(new AppError(401,"category must be Max less than 1000 character"));
         }
 
         if(price  && (Number(price) < 0 || Number(price) > Number.MAX_SAFE_INTEGER)){
@@ -82,7 +82,7 @@ const addProduct = async (req, res, next) => {
             owner: req.user.id,
             description,
             price: Number(price),
-            catagory,
+            category,
             quantity: Number(quantity)
         }
         const product = await Product.create(newProduct);
@@ -192,9 +192,9 @@ const updateProductById = async (req, res, next) => {
         //get the product id
         const { id } = req.params;
         //getting the info of product from the user
-        const { name, description, price, catagory, quantity } = req.body;
+        const { name, description, price, category, quantity } = req.body;
 
-        if (!name || !description || !price || !catagory || !quantity) {
+        if (!name || !description || !price || !category || !quantity) {
             return next(new AppError(401, "Fields are empty"));
         }
 
@@ -207,8 +207,8 @@ const updateProductById = async (req, res, next) => {
             return next(new AppError(401,"Description must be Max less than 1000 character"));
         }
 
-        if (catagory && (catagory.length > 100 || catagory.length < 0)) {
-            return next(new AppError(401,"Catagory must be Max less than 1000 character"));
+        if (category && (category.length > 100 || category.length < 0)) {
+            return next(new AppError(401,"category must be Max less than 1000 character"));
         }
 
 
@@ -246,7 +246,7 @@ const updateProductById = async (req, res, next) => {
 
         //update the product
         const updatedProduct = await Product.findByIdAndUpdate(id, {
-            name, description, price, catagory, quantity
+            name, description, price, category, quantity
         });
 
     
@@ -302,7 +302,7 @@ const removeProductById = async (req, res, next) => {
 //get catagories
 const getProductCatagories = async (req, res, next) => {
     try {
-        const catagories = await Product.find({}, { _id: 0, catagory: 1 });
+        const catagories = await Product.find({}, { _id: 0, category: 1 });
 
         if (!catagories.length) {
             return next(new AppError(402, "There is no product yet"))
@@ -322,7 +322,7 @@ const getProductCatagories = async (req, res, next) => {
 const getMyProduct = async (req, res, next) => {
     try {
 
-        let { skip, limit, catagory } = req.params;
+        let { skip, limit, category } = req.params;
 
         if (!limit) {
             limit = 20;
@@ -343,8 +343,8 @@ const getMyProduct = async (req, res, next) => {
         }
 
         let productList = []
-        if (catagory) {
-            productList = await Product.find({ owner: req.user.id, catagory }).skip(skip).limit(limit);
+        if (category) {
+            productList = await Product.find({ owner: req.user.id, category }).skip(skip).limit(limit);
         }
         else {
             productList = await Product.find({ owner: req.user.id }).skip(skip).limit(limit);
@@ -354,7 +354,7 @@ const getMyProduct = async (req, res, next) => {
             return next(new AppError(402, "User doesnot have any product to sell"));
         }
 
-        const catagories = await Product.find({ owner: req.user.id }, { _id: 0, catagory: 1 });
+        const catagories = await Product.find({ owner: req.user.id }, { _id: 0, category: 1 });
 
         return res.status(200).json({
             success: true,

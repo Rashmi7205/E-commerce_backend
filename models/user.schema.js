@@ -19,7 +19,7 @@ const userSchema = new Schema({
             min:[3,'Min 3 char should be name'],
             max:[20,'Max 20 char can be length of username'],
         },  
-    password:{type:String,required:true,unique:true,select:false},
+    password:{type:String,required:true,unique:true},
     profilePic:{
         public_id:String,
         secure_url:String,

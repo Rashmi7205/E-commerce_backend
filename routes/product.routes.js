@@ -15,7 +15,7 @@ const router = Router();
 
 // public routes
 router.
-    route('/:catagory/:limit/:skip') 
+    route('/:category/:limit/:skip') 
     .get(getProduct);
 router.get('/catagories',getProductCatagories);
 router.get('/search',searchProduct);

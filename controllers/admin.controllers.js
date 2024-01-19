@@ -10,7 +10,8 @@ const getAllProducts = async(req,res,next)=>{
             return next(new AppError(401,"Unauthenticated access"));
         }
         // Provide options for pagination, sorting, and 
-        let { catagory, limit, skip } = req.params;
+        let { category, limit, skip } = req.params;
+
 
         if (!limit) {
             limit = 20;
@@ -21,54 +22,70 @@ const getAllProducts = async(req,res,next)=>{
             return next(new AppError(401, "Invalid limit"));
         }
 
-       
+        const productList = await Product.aggregate([
+            {
+              '$skip': skip
+            }, {
+              '$limit': limit
+            }, {
+              '$match': {
+                'category':category ||'Electronics'
+              }
+            }, {
+              '$lookup': {
+                'from': 'users', 
+                'localField': 'owner', 
+                'foreignField': '_id', 
+                'as': 'owner'
+              }
+            }, {
+              '$unwind': '$owner'
+            }, {
+              '$project': {
+                'name': 1, 
+                'description': 1, 
+                'price': 1, 
+                'quantity': 1, 
+                'image_urls': 1, 
+                'owner.username': 1, 
+                'owner.email': 1, 
+                'owner.profilePic': 1, 
+                'createdAt': 1, 
+                'updatedAt': 1
+              }
+            }
+          ]);
 
+          if(!productList.length){
+            return next(new AppError(402,"There is no product"));
+          }
+
+          return res.status(200).json({
+                success:true,
+                message:"All the products fetched Successfully",
+                productList
+          });
+    
     } catch (error) {
         return next(new AppError(500, "Internal Server Error"));
-    }
-}
-/*  @POST /api/admin/products:*/
-
-// Add a new product to the system.
-// Validate and sanitize input data.
-// Handle file uploads if product images are part of the data.
-const createProduct = async (req,res,next)=>{
-    try {
-        
-    } catch (error) {
-        
-    }
-}
-
-const getProductById = async (req,res,next)=>{
-    try {
-        
-    } catch (error) {
-        
-    }
-}
-
-const updateProductById = async (req,res,next)=>{
-    try {
-        
-    } catch (error) {
-        
-    }
-}
-
-const deleteProductById = async (req,res,next)=>{
-    try {
-        
-    } catch (error) {
-        
     }
 }
 
 const getOrders = async (req,res,next)=>{
     try {
+        const {skip,limit,status} =req.body;
+
         
     } catch (error) {
-        
+      return next(new AppError(500, "Internal Server Error"));
+    }
+}
+
+const getAllUsers = async (req,res,next)=>{
+    try {
+      
+    } catch (error) {
+      return next(new AppError(500, "Internal Server Error"));
     }
 }
 
@@ -76,10 +93,5 @@ const getOrders = async (req,res,next)=>{
 
 export {
     getAllProducts,
-    createProduct,
-    updateProductById,
-    deleteProductById,
-    getProductById,
     getOrders,
-
 };
