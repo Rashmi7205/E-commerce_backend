@@ -73,9 +73,70 @@ const getAllProducts = async(req,res,next)=>{
 
 const getOrders = async (req,res,next)=>{
     try {
-        const {skip,limit,status} =req.body;
+        const {skip,limit,status} =req.params;
+        if(!limit || !skip){
+          return next(new AppError(402,"Missing Parameter:required | limit,skip"));
+        } 
 
-        
+        if(status){
+          const orderList = await Order.aggregate([
+            {
+              $match:{
+                status:status
+              }
+            },
+            {
+              $skip:skip
+            },
+            {
+              $limit:limit
+            },
+            {
+              $unwind:"$items"
+            },
+            {
+              $lookup: {  
+                from:"products",
+                localField:"items.product",
+                foreignField:"_id",
+                as:"items"
+              }
+            }
+          ]);
+
+          return res.status(200).json({
+            success:true,
+            message:"Orders fetched successfully",
+            orderList,
+          });
+        }
+        else{
+          const orderList = await Order.aggregate([
+            {
+              $skip:skip
+            },
+            {
+              $limit:limit
+            },
+            {
+              $unwind:"$items"
+            },
+            {
+              $lookup: {  
+                from:"products",
+                localField:"items.product",
+                foreignField:"_id",
+                as:"items"
+              }
+            }
+          ]);
+
+          return res.status(200).json({
+            success:true,
+            message:"Orders fetched successfully",
+            orderList,
+          });
+        }
     } catch (error) {
       return next(new AppError(500, "Internal Server Error"));
     }
@@ -83,7 +144,37 @@ const getOrders = async (req,res,next)=>{
 
 const getAllUsers = async (req,res,next)=>{
     try {
+      const {skip,limit} = req.params;
+
+      if(!skip || !limit){
+        return next(new AppError(402,"Missing Parameter : skip and limit"));
+      }
       
+      const userList = await User.find({}).skip(skip).limit(limit);
+
+      const totalUser = await User.aggregate([
+        {
+          $group:{
+            _id:"$role",
+            count:{
+              $sum:1
+            }
+          }
+        }
+      ]);
+      
+
+      if(!userList.length){
+        return next(new AppError(402,"OOps! There is no user"));
+      }
+
+      res.status(200).json({
+          success:true,
+          message:"Users fetched successfully",
+          userList,
+          totalUser
+      });
+
     } catch (error) {
       return next(new AppError(500, "Internal Server Error"));
     }
@@ -94,4 +185,5 @@ const getAllUsers = async (req,res,next)=>{
 export {
     getAllProducts,
     getOrders,
+    getAllUsers
 };
